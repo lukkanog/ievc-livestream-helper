@@ -27,6 +27,14 @@ Baixe o **`IevcLivestreamHelper.exe`** da última versão:
 - Na primeira vez, o Windows pode mostrar "O Windows protegeu o computador":
   clique em **Mais informações → Executar assim mesmo**.
 
+## Quer mudar alguma coisa?
+
+- **Mensagens, atalhos, duração e tela da TV** não precisam de programação:
+  veja a página de ajuda do helper (ex.: [Avisos para a TV](docs/avisos-para-a-tv.md)).
+- **Quer usar uma IA (Claude, ChatGPT, Copilot…) para mudar o app?** Pode! As
+  regras para a IA estão no [AGENTS.md](AGENTS.md). Peça em português, do seu
+  jeito, e ela deve explicar o que mudou e como testar.
+
 ## Para quem vai mexer no código
 
 Feito em **C# + WPF (.NET 10)**.
