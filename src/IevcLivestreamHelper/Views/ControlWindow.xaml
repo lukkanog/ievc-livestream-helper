@@ -31,8 +31,6 @@
     <SolidColorBrush x:Key="InputBorderBrush" Color="#8A6A58" />
     <FontFamily x:Key="IconFont">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
 
-    <DropShadowEffect x:Key="SoftShadow" BlurRadius="18" ShadowDepth="3" Opacity="0.28" Color="#5A2000" />
-
     <Style x:Key="SectionTitle" TargetType="TextBlock">
       <Setter Property="FontSize" Value="11" />
       <Setter Property="FontWeight" Value="Bold" />
@@ -125,17 +123,16 @@
     </Style>
   </Window.Resources>
 
-  <!-- Margem externa: espaço para a sombra aparecer. -->
-  <Grid Margin="14">
+  <!-- Sem sombra de propósito: efeitos em janela transparente pesam no computador do OBS. -->
+  <Grid>
 
     <Border x:Name="ExpandedView"
             Width="320"
             Background="#FFF8F1"
             BorderBrush="{StaticResource PanelBorderBrush}"
-            BorderThickness="1"
+            BorderThickness="2"
             CornerRadius="18"
-            Padding="14,8,14,14"
-            Effect="{StaticResource SoftShadow}">
+            Padding="14,8,14,14">
       <StackPanel>
 
         <!-- Cabeçalho: segure aqui para arrastar a janelinha. -->

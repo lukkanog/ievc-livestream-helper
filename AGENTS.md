@@ -44,6 +44,10 @@ A pessoa que conversa com você pode não ser programadora. Então:
   barra de tarefas (sem ícone flutuante). **Sem atalhos de teclado**: tudo é
   feito clicando.
 - **Visual com cores sólidas**, sem degradê, e com bom contraste.
+- **Leve para não travar o OBS.** Janelas transparentes (`AllowsTransparency`)
+  são desenhadas pelo processador: mantenha-as pequenas, **sem sombras/efeitos**
+  (`DropShadowEffect`, `BlurEffect`), sem animações infinitas e com
+  `Timeline.DesiredFrameRate` baixo. Sem aviso na TV, nada deve rodar.
 
 - **Todo texto que o usuário vê é em português do Brasil** (janelas, botões,
   mensagens de erro, README, docs, nomes das chaves do `configuracoes.json`).
