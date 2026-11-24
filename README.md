@@ -27,6 +27,19 @@ Baixe o **`IevcLivestreamHelper.exe`** da última versão:
 - Na primeira vez, o Windows pode mostrar "O Windows protegeu o computador":
   clique em **Mais informações → Executar assim mesmo**.
 
+## Deu algum erro?
+
+O app guarda um registro (log) do que acontece, com os detalhes de qualquer erro:
+
+1. Na janela do app, clique em **Abrir registros (log)**. Ou, se a janela nem
+   abriu, cole isto na barra de endereço do Explorador de Arquivos:
+   `%LocalAppData%\IEVC Livestream Helper\logs`
+2. Abra o arquivo do dia (ex.: `log-2026-11-23.txt`).
+3. Mande esse arquivo para quem cuida do app, ou cole o conteúdo para a IA
+   que estiver ajudando.
+
+Os registros com mais de 14 dias são apagados sozinhos.
+
 ## Quer mudar alguma coisa?
 
 - **Mensagens, atalhos, duração e tela da TV** não precisam de programação:
@@ -49,6 +62,7 @@ src/IevcLivestreamHelper/
 ├── Hotkeys/                 Atalhos globais de teclado
 ├── Monitors/                Lista de monitores e escolha da TV
 ├── Settings/                Leitura e gravação do configuracoes.json
+├── Diagnostics/Log.cs       Registro (log) em arquivo texto
 ├── Native/NativeMethods.cs  Chamadas à API do Windows
 └── Assets/app.ico           Ícone
 docs/                        Uma página de ajuda por helper
