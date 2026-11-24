@@ -22,10 +22,13 @@
 
   <Window.Resources>
     <!-- ===== Cores ===== -->
-    <SolidColorBrush x:Key="CoralBrush" Color="#FF7A59" />
-    <SolidColorBrush x:Key="SoftYellowBrush" Color="#FFE7A8" />
-    <SolidColorBrush x:Key="MutedTextBrush" Color="#8A6A58" />
-    <SolidColorBrush x:Key="PanelBorderBrush" Color="#F1DFCF" />
+    <!-- Contraste alto: texto branco no coral escuro e texto marrom-escuro nos fundos claros. -->
+    <SolidColorBrush x:Key="PrimaryBrush" Color="#C43D1F" />
+    <SolidColorBrush x:Key="SoftYellowBrush" Color="#FFE08A" />
+    <SolidColorBrush x:Key="SoftYellowBorderBrush" Color="#E0B44A" />
+    <SolidColorBrush x:Key="MutedTextBrush" Color="#6B4E3D" />
+    <SolidColorBrush x:Key="PanelBorderBrush" Color="#E3CDB9" />
+    <SolidColorBrush x:Key="InputBorderBrush" Color="#8A6A58" />
     <FontFamily x:Key="IconFont">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
 
     <DropShadowEffect x:Key="SoftShadow" BlurRadius="18" ShadowDepth="3" Opacity="0.28" Color="#5A2000" />
@@ -45,12 +48,15 @@
       <Setter Property="Padding" Value="12,8" />
       <Setter Property="Cursor" Value="Hand" />
       <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="BorderBrush" Value="Transparent" />
       <Setter Property="Focusable" Value="False" />
       <Setter Property="Template">
         <Setter.Value>
           <ControlTemplate TargetType="Button">
             <Border x:Name="Shape"
                     Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
                     CornerRadius="10"
                     Padding="{TemplateBinding Padding}">
               <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
@@ -74,22 +80,32 @@
       <Setter Property="Padding" Value="14,11" />
       <Setter Property="FontSize" Value="14" />
       <Setter Property="Margin" Value="0,0,0,6" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="BorderBrush" Value="{StaticResource SoftYellowBorderBrush}" />
     </Style>
 
+    <!-- Botão principal: Enviar. O maior e mais forte da janelinha. -->
     <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource RoundButton}">
-      <Setter Property="Background" Value="{StaticResource CoralBrush}" />
+      <Setter Property="Background" Value="{StaticResource PrimaryBrush}" />
       <Setter Property="Foreground" Value="White" />
+      <Setter Property="FontSize" Value="15" />
+      <Setter Property="FontWeight" Value="Bold" />
+      <Setter Property="Padding" Value="12,11" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
     </Style>
 
+    <!-- Limpar: secundário, discreto mas legível. -->
     <Style x:Key="ClearButton" TargetType="Button" BasedOn="{StaticResource RoundButton}">
-      <Setter Property="Background" Value="#3D2A20" />
-      <Setter Property="Foreground" Value="White" />
-      <Setter Property="Padding" Value="12,10" />
+      <Setter Property="Background" Value="White" />
+      <Setter Property="Foreground" Value="#3D2A20" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="BorderBrush" Value="{StaticResource InputBorderBrush}" />
+      <Setter Property="Padding" Value="12,7" />
       <Setter Property="HorizontalContentAlignment" Value="Center" />
     </Style>
 
     <Style x:Key="SmallButton" TargetType="Button" BasedOn="{StaticResource RoundButton}">
-      <Setter Property="Background" Value="#F6EADF" />
+      <Setter Property="Background" Value="#F3E4D6" />
       <Setter Property="FontWeight" Value="Normal" />
       <Setter Property="Padding" Value="9,5" />
       <Setter Property="Margin" Value="0,6,6,0" />
@@ -143,7 +159,7 @@
         <!-- O que está na TV agora. -->
         <Border x:Name="StatusPanel" CornerRadius="10" Padding="10,7" Margin="0,8,0,0"
                 Background="#EEF7EE">
-          <TextBlock x:Name="StatusText" FontWeight="SemiBold" TextWrapping="Wrap" />
+          <TextBlock x:Name="StatusText" FontWeight="SemiBold" TextWrapping="Wrap" Foreground="#2B1300" />
         </Border>
 
         <!-- Mensagens rápidas. -->
@@ -158,21 +174,37 @@
           </ItemsControl.ItemTemplate>
         </ItemsControl>
 
-        <!-- Mensagem personalizada. Apertar Enter na caixa já envia. -->
-        <DockPanel Margin="0,2,0,0">
-          <Button DockPanel.Dock="Right" Content="Enviar"
-                  Style="{StaticResource PrimaryButton}" Margin="6,0,0,0"
-                  Click="OnSendCustomMessageClick" />
-          <TextBox x:Name="CustomMessageBox"
-                   FontSize="14" Padding="6,6"
-                   VerticalContentAlignment="Center"
-                   BorderBrush="{StaticResource PanelBorderBrush}"
-                   ToolTip="Escreva outra mensagem e aperte Enter"
-                   KeyDown="OnCustomMessageKeyDown" />
-        </DockPanel>
+        <!--
+          Mensagem personalizada: caixa de texto grande (várias linhas).
+          Enter envia; Shift+Enter pula linha.
+        -->
+        <TextBlock Text="OUTRA MENSAGEM" Style="{StaticResource SectionTitle}" />
+        <Border Background="White" CornerRadius="10" BorderThickness="2"
+                BorderBrush="{StaticResource InputBorderBrush}">
+          <Grid>
+            <!-- Dica que aparece só enquanto a caixa está vazia. -->
+            <TextBlock x:Name="CustomMessagePlaceholder"
+                       Text="Escreva aqui o aviso para a TV…"
+                       Foreground="{StaticResource MutedTextBrush}"
+                       FontSize="15" Margin="10,9,10,0"
+                       IsHitTestVisible="False" />
+            <TextBox x:Name="CustomMessageBox"
+                     FontSize="15" Foreground="#2B1300"
+                     Background="Transparent" BorderThickness="0"
+                     Padding="6,7" MinHeight="72" MaxHeight="140"
+                     TextWrapping="Wrap" AcceptsReturn="True"
+                     VerticalScrollBarVisibility="Auto"
+                     ToolTip="Enter envia. Shift+Enter pula linha."
+                     PreviewKeyDown="OnCustomMessageKeyDown"
+                     TextChanged="OnCustomMessageTextChanged" />
+          </Grid>
+        </Border>
+
+        <Button Style="{StaticResource PrimaryButton}" Content="Enviar para a TV"
+                Margin="0,8,0,0" Click="OnSendCustomMessageClick" />
 
         <Button Style="{StaticResource ClearButton}" Content="Limpar aviso da TV"
-                Margin="0,8,0,0" Click="OnClearClick" />
+                Margin="0,6,0,0" Click="OnClearClick" />
 
         <!-- Configurações (aparecem ao clicar na engrenagem). -->
         <StackPanel x:Name="SettingsPanel" Visibility="Collapsed">
@@ -236,7 +268,7 @@
       <Border x:Name="BubbleBadge"
               HorizontalAlignment="Right" VerticalAlignment="Top"
               Margin="0,-4,-6,0" MinWidth="24" Height="22" CornerRadius="11"
-              Padding="5,0" Background="{StaticResource CoralBrush}"
+              Padding="5,0" Background="{StaticResource PrimaryBrush}"
               BorderBrush="White" BorderThickness="2"
               Visibility="Collapsed">
         <TextBlock x:Name="BubbleBadgeText" Foreground="White" FontSize="11" FontWeight="Bold"

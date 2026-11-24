@@ -20,8 +20,8 @@ public partial class ControlWindow : Window
 {
     private static readonly Brush IdleStatusBackground = new SolidColorBrush(Color.FromRgb(0xEE, 0xF7, 0xEE));
     private static readonly Brush ActiveStatusBackground = new SolidColorBrush(Color.FromRgb(0xFF, 0xEF, 0xC2));
-    private static readonly Brush IdleBubbleBorder = new SolidColorBrush(Color.FromRgb(0xF1, 0xDF, 0xCF));
-    private static readonly Brush ActiveBubbleBorder = new SolidColorBrush(Color.FromRgb(0xFF, 0x7A, 0x59));
+    private static readonly Brush IdleBubbleBorder = new SolidColorBrush(Color.FromRgb(0xE3, 0xCD, 0xB9));
+    private static readonly Brush ActiveBubbleBorder = new SolidColorBrush(Color.FromRgb(0xC4, 0x3D, 0x1F));
 
     /// <summary>Quanto o mouse pode mexer num clique sem que ele vire "arrastar".</summary>
     private const double ClickTolerance = 4;
@@ -82,13 +82,22 @@ public partial class ControlWindow : Window
 
     private void OnSendCustomMessageClick(object sender, RoutedEventArgs e) => SendCustomMessage();
 
+    /// <summary>Enter envia; Shift+Enter pula linha (comportamento de chat).</summary>
     private void OnCustomMessageKeyDown(object sender, KeyEventArgs e)
     {
-        if (e.Key == Key.Enter)
+        if (e.Key == Key.Enter && !Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
         {
             SendCustomMessage();
             e.Handled = true;
         }
+    }
+
+    /// <summary>Esconde a dica "Escreva aqui…" quando há texto na caixa.</summary>
+    private void OnCustomMessageTextChanged(object sender, TextChangedEventArgs e)
+    {
+        CustomMessagePlaceholder.Visibility = string.IsNullOrEmpty(CustomMessageBox.Text)
+            ? Visibility.Visible
+            : Visibility.Collapsed;
     }
 
     private void SendCustomMessage()

@@ -3,7 +3,8 @@
 Helper do [IEVC Livestream Helper](../README.md).
 
 O operador da **mesa de corte** (OBS) manda um aviso, e ele aparece **bem grande
-na TV da mesa de som**, que fica em outra sala.
+na TV da mesa de som**, que fica em outra sala. O aviso aparece na
+**parte de baixo** da TV.
 
 - Só visual (sem som), fofinho mas impossível de não ver: cartão arredondado
   amarelo/coral, sino balançando, pulsação suave e uma barrinha mostrando quanto
@@ -23,7 +24,8 @@ na TV da mesa de som**, que fica em outra sala.
    - **O áudio não está chegando**
    - **Favor colocar o fone/headset**
 
-   ou escreva outra mensagem na caixinha e aperte **Enter**.
+   ou escreva outra mensagem na caixa **Outra mensagem** e clique em
+   **Enviar para a TV** (ou aperte **Enter**; **Shift+Enter** pula linha).
 4. Para tirar o aviso antes do tempo: **Limpar aviso da TV**.
 
 ### A janelinha
