@@ -1,0 +1,22 @@
+# Saída de compilação
+bin/
+obj/
+publish/
+artifacts/
+
+# Visual Studio / Rider / VS Code
+.vs/
+.idea/
+.vscode/
+*.user
+*.suo
+*.userprefs
+*.DotSettings.user
+
+# Configuração local gerada pelo app ao rodar (fica ao lado do .exe)
+configuracoes.json
+
+# Sistema operacional
+Thumbs.db
+Desktop.ini
+.DS_Store
