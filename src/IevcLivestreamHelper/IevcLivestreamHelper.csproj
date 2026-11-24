@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Aplicativo WPF para Windows. -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>IevcLivestreamHelper</RootNamespace>
+    <AssemblyName>IevcLivestreamHelper</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
+
+    <!-- Permite compilar em Linux/macOS (ex.: CI). O app em si só roda no Windows. -->
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+  </PropertyGroup>
+
+  <!-- Informações do produto. A versão é sobrescrita pelo GitHub Actions (-p:Version=...). -->
+  <PropertyGroup>
+    <Product>IEVC Livestream Helper</Product>
+    <Description>Ferramentas de apoio para a transmissão da IEVC.</Description>
+    <Version>1.0.0</Version>
+  </PropertyGroup>
+
+  <!--
+    Publicação: um único .exe portátil, que já leva o .NET dentro
+    (não precisa instalar nada no computador).
+  -->
+  <PropertyGroup>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <SatelliteResourceLanguages>pt-BR</SatelliteResourceLanguages>
+    <DebugType Condition="'$(Configuration)' == 'Release'">none</DebugType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\app.ico" />
+  </ItemGroup>
+
+</Project>
