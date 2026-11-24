@@ -11,14 +11,33 @@ namespace IevcLivestreamHelper.Views;
 /// <summary>
 /// Mostra e esconde o aviso na TV, com as animações.
 /// Quem decide QUANDO mostrar/esconder é o <see cref="Alerts.AlertService"/>.
+///
+/// Pensado para ser LEVE (o mesmo computador roda o OBS):
+///   - a janela tem só o tamanho do cartão, não a TV inteira;
+///   - sem sombra nem efeitos;
+///   - o sino balança só algumas vezes e para;
+///   - a barrinha de tempo anda poucas vezes por segundo;
+///   - sem aviso na tela, a janela fica escondida e nada roda.
 /// </summary>
 public partial class OverlayWindow : Window
 {
+    /// <summary>Largura do cartão: 80% da largura da TV.</summary>
+    private const double CardWidthShareOfScreen = 0.8;
+
+    /// <summary>Distância entre o cartão e a borda de baixo da TV (em unidades do WPF).</summary>
+    private const double BottomMargin = 56;
+
+    /// <summary>Quantas vezes o sino balança antes de parar.</summary>
+    private const int BellSwingCount = 3;
+
     /// <summary>
-    /// Distância (abaixo da tela) de onde o cartão entra e para onde ele sai.
-    /// O cartão fica na parte de baixo da TV.
+    /// Quadros por segundo das animações. O padrão do WPF é 60; menos que isso
+    /// já fica suave e gasta bem menos processador.
     /// </summary>
-    private const double OffscreenY = 700;
+    private const int AnimationFrameRate = 30;
+
+    /// <summary>A barrinha de tempo não precisa ser suave: poucas atualizações por segundo bastam.</summary>
+    private const int TimeLeftBarFrameRate = 5;
 
     private readonly nint _handle;
 
@@ -57,17 +76,16 @@ public partial class OverlayWindow : Window
             Show();
         }
 
-        MoveToMonitor(monitor);
+        PlaceAtBottomOfMonitor(monitor);
         BringToFront();
         _keepOnTopTimer.Start();
 
         PlayEntrance();
         StartBellSwing();
-        StartPulse();
         StartTimeLeftBar(duration);
     }
 
-    /// <summary>Tira o aviso da TV (com animação de saída).</summary>
+    /// <summary>Tira o aviso da TV (com uma animação curta de saída).</summary>
     public void HideAlert()
     {
         if (!IsVisible)
@@ -75,40 +93,41 @@ public partial class OverlayWindow : Window
 
         var alertBeingHidden = _alertNumber;
 
-        var slideOut = new DoubleAnimation(OffscreenY, TimeSpan.FromMilliseconds(450))
-        {
-            EasingFunction = new BackEase { EasingMode = EasingMode.EaseIn, Amplitude = 0.3 },
-        };
-        slideOut.Completed += (_, _) =>
+        var fadeOut = Animation(new DoubleAnimation(0, TimeSpan.FromMilliseconds(300)));
+        fadeOut.Completed += (_, _) =>
         {
             // Se um aviso novo chegou durante a saída, não esconda.
             if (alertBeingHidden == _alertNumber)
                 HideWindowAndStopAnimations();
         };
 
-        CardSlide.BeginAnimation(TranslateTransform.YProperty, slideOut);
-        Card.BeginAnimation(OpacityProperty, new DoubleAnimation(0, TimeSpan.FromMilliseconds(450)));
+        Card.BeginAnimation(OpacityProperty, fadeOut);
     }
 
-    // ----- Animações -----
+    // ----- Animações (todas curtas) -----
 
-    /// <summary>O cartão sobe de baixo e dá uma leve "quicada".</summary>
+    /// <summary>O cartão aparece "estufando" de leve.</summary>
     private void PlayEntrance()
     {
-        CardSlide.BeginAnimation(TranslateTransform.YProperty, new DoubleAnimation(OffscreenY, 0, TimeSpan.FromMilliseconds(750))
+        // Sem "quicar" para fora do tamanho: a janela tem o tamanho exato do cartão
+        // e qualquer coisa maior seria cortada.
+        var pop = Animation(new DoubleAnimation(0.9, 1, TimeSpan.FromMilliseconds(350))
         {
-            EasingFunction = new BackEase { EasingMode = EasingMode.EaseOut, Amplitude = 0.45 },
+            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut },
         });
-        Card.BeginAnimation(OpacityProperty, new DoubleAnimation(1, TimeSpan.FromMilliseconds(250)));
+
+        CardPop.BeginAnimation(ScaleTransform.ScaleXProperty, pop);
+        CardPop.BeginAnimation(ScaleTransform.ScaleYProperty, pop);
+        Card.BeginAnimation(OpacityProperty, Animation(new DoubleAnimation(1, TimeSpan.FromMilliseconds(250))));
     }
 
-    /// <summary>O sino balança para lá e para cá, descansa um pouquinho, e repete.</summary>
+    /// <summary>O sino balança algumas vezes e depois fica parado.</summary>
     private void StartBellSwing()
     {
         var swing = new DoubleAnimationUsingKeyFrames
         {
-            Duration = TimeSpan.FromMilliseconds(1600),
-            RepeatBehavior = RepeatBehavior.Forever,
+            Duration = TimeSpan.FromMilliseconds(1200),
+            RepeatBehavior = new RepeatBehavior(BellSwingCount),
         };
 
         double[] angles = [0, -22, 18, -14, 10, -5, 0];
@@ -120,27 +139,22 @@ public partial class OverlayWindow : Window
                 new SineEase { EasingMode = EasingMode.EaseInOut }));
         }
 
-        BellSwing.BeginAnimation(RotateTransform.AngleProperty, swing);
-    }
-
-    /// <summary>O cartão "respira" (cresce e diminui bem de leve) para chamar atenção.</summary>
-    private void StartPulse()
-    {
-        var pulse = new DoubleAnimation(1.0, 1.03, TimeSpan.FromMilliseconds(900))
-        {
-            AutoReverse = true,
-            RepeatBehavior = RepeatBehavior.Forever,
-            EasingFunction = new SineEase { EasingMode = EasingMode.EaseInOut },
-        };
-
-        CardPulse.BeginAnimation(ScaleTransform.ScaleXProperty, pulse);
-        CardPulse.BeginAnimation(ScaleTransform.ScaleYProperty, pulse);
+        BellSwing.BeginAnimation(RotateTransform.AngleProperty, Animation(swing));
     }
 
     /// <summary>A barrinha de baixo esvazia no mesmo tempo que o aviso dura.</summary>
     private void StartTimeLeftBar(TimeSpan duration)
     {
-        TimeLeftBar.BeginAnimation(ScaleTransform.ScaleXProperty, new DoubleAnimation(1, 0, duration));
+        var shrink = new DoubleAnimation(1, 0, duration);
+        Timeline.SetDesiredFrameRate(shrink, TimeLeftBarFrameRate);
+        TimeLeftBar.BeginAnimation(ScaleTransform.ScaleXProperty, shrink);
+    }
+
+    /// <summary>Limita os quadros por segundo de uma animação (veja <see cref="AnimationFrameRate"/>).</summary>
+    private static T Animation<T>(T timeline) where T : Timeline
+    {
+        Timeline.SetDesiredFrameRate(timeline, AnimationFrameRate);
+        return timeline;
     }
 
     private void HideWindowAndStopAnimations()
@@ -150,27 +164,42 @@ public partial class OverlayWindow : Window
 
         // Passar "null" para BeginAnimation para a animação.
         BellSwing.BeginAnimation(RotateTransform.AngleProperty, null);
-        CardPulse.BeginAnimation(ScaleTransform.ScaleXProperty, null);
-        CardPulse.BeginAnimation(ScaleTransform.ScaleYProperty, null);
+        CardPop.BeginAnimation(ScaleTransform.ScaleXProperty, null);
+        CardPop.BeginAnimation(ScaleTransform.ScaleYProperty, null);
         TimeLeftBar.BeginAnimation(ScaleTransform.ScaleXProperty, null);
     }
 
     // ----- Janela (Windows) -----
 
-    /// <summary>Faz a janela cobrir exatamente o monitor escolhido.</summary>
-    private void MoveToMonitor(MonitorInfo monitor)
+    /// <summary>
+    /// Coloca a janela (do tamanho do cartão) centralizada na parte de baixo da TV.
+    /// As contas são feitas em pixels reais da tela, para funcionar com
+    /// qualquer escala (100%, 150%...) em cada monitor.
+    /// </summary>
+    private void PlaceAtBottomOfMonitor(MonitorInfo monitor)
     {
-        // Chamamos duas vezes de propósito: se a TV tiver uma escala (DPI) diferente
-        // do monitor anterior, o Windows reajusta o tamanho na primeira chamada.
-        // A segunda garante o tamanho exato da TV.
-        for (var attempt = 0; attempt < 2; attempt++)
-        {
-            NativeMethods.SetWindowPos(
-                _handle,
-                NativeMethods.HWND_TOPMOST,
-                monitor.Left, monitor.Top, monitor.Width, monitor.Height,
-                NativeMethods.SWP_NOACTIVATE);
-        }
+        // 1) Leva a janela para dentro da TV, para ela "pegar" a escala (DPI) da TV.
+        SetBounds(monitor.Left, monitor.Top, 1, 1);
+        var scale = NativeMethods.GetDpiForWindow(_handle) / 96.0;
+
+        // 2) Mede a altura do cartão com a mensagem atual na largura desejada.
+        var widthPixels = (int)(monitor.Width * CardWidthShareOfScreen);
+        Card.Measure(new Size(widthPixels / scale, double.PositiveInfinity));
+        var heightPixels = (int)Math.Ceiling(Card.DesiredSize.Height * scale);
+
+        // 3) Centraliza na horizontal, encostado embaixo (com uma margem).
+        var left = monitor.Left + (monitor.Width - widthPixels) / 2;
+        var top = monitor.Top + monitor.Height - heightPixels - (int)(BottomMargin * scale);
+        SetBounds(left, top, widthPixels, heightPixels);
+    }
+
+    private void SetBounds(int left, int top, int width, int height)
+    {
+        NativeMethods.SetWindowPos(
+            _handle,
+            NativeMethods.HWND_TOPMOST,
+            left, top, width, height,
+            NativeMethods.SWP_NOACTIVATE);
     }
 
     private void BringToFront()

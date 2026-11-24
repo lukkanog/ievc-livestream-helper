@@ -1,9 +1,13 @@
 <!--
   Janela do aviso que aparece na TV da mesa de som.
 
-  Ela cobre o monitor inteiro, mas é transparente, fica sempre por cima
-  (inclusive do projetor em tela cheia do OBS), não recebe cliques e nunca
-  rouba o foco. Só o "cartão" com o sino e a mensagem fica visível.
+  A janela tem só o tamanho do "cartão" (posicionada na parte de baixo da TV),
+  fica sempre por cima (inclusive do projetor em tela cheia do OBS), não recebe
+  cliques e nunca rouba o foco.
+
+  Leveza: janelas com transparência são desenhadas pelo processador (sem placa
+  de vídeo), então mantemos a janela pequena, sem sombra/efeitos e com poucas
+  animações curtas. Assim o computador do OBS não engasga.
 -->
 <Window x:Class="IevcLivestreamHelper.Views.OverlayWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -18,7 +22,7 @@
         ShowActivated="False"
         Focusable="False"
         IsHitTestVisible="False"
-        Width="1280" Height="720">
+        Width="200" Height="100">
 
   <Window.Resources>
     <!-- Paleta do aviso: amarelo quentinho (cor sólida), texto marrom bem escuro (alto contraste). -->
@@ -29,35 +33,18 @@
     <SolidColorBrush x:Key="BellClapperBrush" Color="#7A3E00" />
   </Window.Resources>
 
-  <Grid>
-    <!-- O cartão ocupa a faixa central (80%) da largura da TV. -->
-    <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="1*" />
-      <ColumnDefinition Width="8*" />
-      <ColumnDefinition Width="1*" />
-    </Grid.ColumnDefinitions>
-
+  <!-- A janela inteira é o cartão (o tamanho é calculado em OverlayWindow.xaml.cs). -->
     <Border x:Name="Card"
-            Grid.Column="1"
-            VerticalAlignment="Bottom"
-            Margin="0,0,0,56"
             Padding="44,36,44,32"
             CornerRadius="44"
             Background="#FFD45C"
             BorderBrush="White"
             BorderThickness="8"
             Opacity="0"
-            RenderTransformOrigin="0.5,0.5">
-      <Border.Effect>
-        <DropShadowEffect BlurRadius="48" ShadowDepth="6" Opacity="0.45" Color="#5A2000" />
-      </Border.Effect>
+            RenderTransformOrigin="0.5,1">
       <Border.RenderTransform>
-        <TransformGroup>
-          <!-- "Respiração" suave do cartão. -->
-          <ScaleTransform x:Name="CardPulse" />
-          <!-- Entrada deslizando de baixo. -->
-          <TranslateTransform x:Name="CardSlide" />
-        </TransformGroup>
+        <!-- Entrada: o cartão "estufa" um pouquinho ao aparecer. -->
+        <ScaleTransform x:Name="CardPop" />
       </Border.RenderTransform>
 
       <Grid>
@@ -131,5 +118,4 @@
         </Border>
       </Grid>
     </Border>
-  </Grid>
 </Window>

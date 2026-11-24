@@ -43,6 +43,12 @@ internal static class NativeMethods
     [return: MarshalAs(UnmanagedType.Bool)]
     public static extern bool SetWindowPos(nint hWnd, nint hWndInsertAfter, int x, int y, int cx, int cy, uint uFlags);
 
+    // ----- Escala (DPI) do monitor onde a janela está -----
+
+    /// <summary>DPI da janela: 96 = 100%, 144 = 150%, 192 = 200%.</summary>
+    [DllImport("user32.dll")]
+    public static extern uint GetDpiForWindow(nint hWnd);
+
     // ----- Trazer uma janela para a frente -----
 
     /// <summary>Restaura a janela se estiver minimizada.</summary>
