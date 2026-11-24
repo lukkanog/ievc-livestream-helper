@@ -33,9 +33,13 @@
     <!-- Tudo dentro de um único .msi (sem arquivos .cab separados). -->
     <MediaTemplate EmbedCab="yes" />
 
-    <!-- Ícone e links em "Aplicativos instalados". -->
-    <Icon Id="AppIcon" SourceFile="$(RepoRoot)src\IevcLivestreamHelper\Assets\app.ico" />
-    <Property Id="ARPPRODUCTICON" Value="AppIcon" />
+    <!--
+      Ícone e links em "Aplicativos instalados".
+      O ícone vem do próprio .exe, e o Id precisa terminar em ".exe": o Windows
+      Installer exige isso para atalhos "anunciados" (regra ICE50).
+    -->
+    <Icon Id="AppIcon.exe" SourceFile="$(AppPublishDir)IevcLivestreamHelper.exe" />
+    <Property Id="ARPPRODUCTICON" Value="AppIcon.exe" />
     <Property Id="ARPHELPLINK" Value="https://github.com/lukkanog/ievc-livestream-helper" />
     <Property Id="ARPURLINFOABOUT" Value="https://github.com/lukkanog/ievc-livestream-helper" />
 
@@ -59,14 +63,14 @@
                     Name="IEVC Livestream Helper"
                     Description="Ferramentas de apoio para a transmissão da IEVC"
                     WorkingDirectory="INSTALLFOLDER"
-                    Icon="AppIcon"
+                    Icon="AppIcon.exe"
                     Advertise="yes" />
           <Shortcut Id="DesktopShortcut"
                     Directory="DesktopFolder"
                     Name="IEVC Livestream Helper"
                     Description="Ferramentas de apoio para a transmissão da IEVC"
                     WorkingDirectory="INSTALLFOLDER"
-                    Icon="AppIcon"
+                    Icon="AppIcon.exe"
                     Advertise="yes" />
         </File>
       </Component>

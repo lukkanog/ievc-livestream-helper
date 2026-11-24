@@ -25,7 +25,7 @@
     <!-- Pasta onde está o IevcLivestreamHelper.exe gerado pelo "dotnet publish". -->
     <AppPublishDir Condition="'$(AppPublishDir)' == ''">$(MSBuildThisFileDirectory)..\publish\</AppPublishDir>
 
-    <DefineConstants>Version=$(Version);AppPublishDir=$(AppPublishDir);RepoRoot=$(MSBuildThisFileDirectory)..\</DefineConstants>
+    <DefineConstants>Version=$(Version);AppPublishDir=$(AppPublishDir)</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
