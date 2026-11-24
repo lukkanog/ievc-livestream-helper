@@ -85,6 +85,7 @@ src/IevcLivestreamHelper/
 ├── Monitors/                Lista de monitores e escolha da TV
 ├── Settings/                Leitura e gravação do configuracoes.json
 ├── Diagnostics/Log.cs       Registro (log) em arquivo texto
+├── Startup/SingleInstance.cs  Garante um app aberto por vez (e destrava se precisar)
 ├── Native/NativeMethods.cs  Chamadas à API do Windows
 └── Assets/app.ico           Ícone
 installer/                   Instalador .msi (WiX Toolset 5)

@@ -3,6 +3,7 @@ using System.Windows.Threading;
 using IevcLivestreamHelper.Alerts;
 using IevcLivestreamHelper.Diagnostics;
 using IevcLivestreamHelper.Settings;
+using IevcLivestreamHelper.Startup;
 using IevcLivestreamHelper.Views;
 
 namespace IevcLivestreamHelper;
@@ -18,8 +19,8 @@ public partial class App : Application
 {
     public const string AppTitle = "IEVC Livestream Helper";
 
-    /// <summary>Impede abrir o app duas vezes (duas janelinhas mandando avisos para a mesma TV).</summary>
-    private Mutex? _singleInstanceLock;
+    /// <summary>Impede abrir o app duas vezes (veja <see cref="SingleInstance"/>).</summary>
+    private SingleInstance? _singleInstance;
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -31,11 +32,9 @@ public partial class App : Application
         Log.Info($"Abrindo o {AppTitle} {typeof(App).Assembly.GetName().Version} " +
                  $"(.NET {Environment.Version}, {Environment.OSVersion})");
 
-        _singleInstanceLock = new Mutex(initiallyOwned: true, "IevcLivestreamHelper.SingleInstance", out var isFirstInstance);
-        if (!isFirstInstance)
+        _singleInstance = SingleInstance.TryAcquire() ?? HandleAlreadyRunning();
+        if (_singleInstance is null)
         {
-            MessageBox.Show("O IEVC Livestream Helper já está aberto. Procure o ícone dele na barra de tarefas.",
-                AppTitle, MessageBoxButton.OK, MessageBoxImage.Information);
             Shutdown();
             return;
         }
@@ -52,6 +51,40 @@ public partial class App : Application
             ShowErrorMessage("Não consegui abrir o app.", ex);
             Shutdown();
         }
+    }
+
+    /// <summary>
+    /// Já existe outro aberto. Se ele tem janela, só trazemos ela para a frente.
+    /// Se não tem (travou), oferecemos fechar o travado e abrir um novo.
+    /// Retorna a vaga de instância única, ou null se este não deve abrir.
+    /// </summary>
+    private static SingleInstance? HandleAlreadyRunning()
+    {
+        if (SingleInstance.BringOtherInstanceToFront())
+        {
+            Log.Info("Já estava aberto; trouxe a janela existente para a frente.");
+            return null;
+        }
+
+        Log.Warning("Já existe uma instância aberta, mas sem janela (travada).");
+        var answer = MessageBox.Show(
+            "O IEVC Livestream Helper parece estar aberto, mas travado e sem janela.\n\n" +
+            "Fechar o que travou e abrir de novo?",
+            AppTitle, MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+        if (answer != MessageBoxResult.Yes)
+            return null;
+
+        SingleInstance.CloseOtherInstances();
+        var instance = SingleInstance.WaitAndAcquire(TimeSpan.FromSeconds(5));
+        if (instance is null)
+        {
+            MessageBox.Show(
+                "Não consegui fechar o que travou. Reinicie o computador e tente de novo.",
+                AppTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+
+        return instance;
     }
 
     private void OpenWindows()
@@ -79,7 +112,7 @@ public partial class App : Application
     protected override void OnExit(ExitEventArgs e)
     {
         Log.Info("App fechado.");
-        _singleInstanceLock?.Dispose();
+        _singleInstance?.Dispose();
         base.OnExit(e);
     }
 

@@ -43,6 +43,19 @@ internal static class NativeMethods
     [return: MarshalAs(UnmanagedType.Bool)]
     public static extern bool SetWindowPos(nint hWnd, nint hWndInsertAfter, int x, int y, int cx, int cy, uint uFlags);
 
+    // ----- Trazer uma janela para a frente -----
+
+    /// <summary>Restaura a janela se estiver minimizada.</summary>
+    public const int SW_RESTORE = 9;
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool ShowWindow(nint hWnd, int nCmdShow);
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool SetForegroundWindow(nint hWnd);
+
     // ----- Esconder a janela de capturas de tela (ex.: "Captura de tela" do OBS) -----
 
     public const uint WDA_EXCLUDEFROMCAPTURE = 0x00000011;
