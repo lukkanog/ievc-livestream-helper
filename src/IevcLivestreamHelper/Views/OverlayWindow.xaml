@@ -21,7 +21,7 @@
         Width="1280" Height="720">
 
   <Window.Resources>
-    <!-- Paleta do aviso: amarelo quentinho → coral, texto marrom bem escuro (alto contraste). -->
+    <!-- Paleta do aviso: amarelo quentinho (cor sólida), texto marrom bem escuro (alto contraste). -->
     <SolidColorBrush x:Key="TextBrush" Color="#2B1300" />
     <SolidColorBrush x:Key="SubtitleBrush" Color="#7A2E0E" />
     <SolidColorBrush x:Key="BellGoldBrush" Color="#FFC93C" />
@@ -43,16 +43,11 @@
             Margin="0,0,0,56"
             Padding="44,36,44,32"
             CornerRadius="44"
+            Background="#FFD45C"
             BorderBrush="White"
             BorderThickness="8"
             Opacity="0"
             RenderTransformOrigin="0.5,0.5">
-      <Border.Background>
-        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-          <GradientStop Color="#FFD966" Offset="0" />
-          <GradientStop Color="#FF9A6B" Offset="1" />
-        </LinearGradientBrush>
-      </Border.Background>
       <Border.Effect>
         <DropShadowEffect BlurRadius="48" ShadowDepth="6" Opacity="0.45" Color="#5A2000" />
       </Border.Effect>

@@ -40,8 +40,10 @@ A pessoa que conversa com você pode não ser programadora. Então:
 ## Regras do projeto (não negociáveis)
 
 - **A janela do operador é uma janelinha flutuante** (estilo "bichinho" do
-  ChatGPT/Codex): pequena, sempre por cima, arrastável e recolhível numa
-  bolinha. **Sem atalhos de teclado**: tudo é feito clicando.
+  ChatGPT/Codex): pequena, sempre por cima, arrastável e minimizável para a
+  barra de tarefas (sem ícone flutuante). **Sem atalhos de teclado**: tudo é
+  feito clicando.
+- **Visual com cores sólidas**, sem degradê, e com bom contraste.
 
 - **Todo texto que o usuário vê é em português do Brasil** (janelas, botões,
   mensagens de erro, README, docs, nomes das chaves do `configuracoes.json`).
@@ -128,7 +130,7 @@ dotnet build installer -c Release   # .msi, só no Windows
   deixe para a pessoa um **roteiro curto de teste**, por exemplo:
   1. Abrir o app e clicar em **Testar**: o aviso aparece na TV?
   2. Com o projetor do OBS em tela cheia, o aviso fica por cima?
-  3. A janelinha do operador fica por cima do OBS, dá para arrastar e recolher?
+  3. A janelinha do operador fica por cima do OBS, dá para arrastar e minimizar?
   4. O aviso some sozinho no tempo configurado?
 
 ## Publicação (Releases)

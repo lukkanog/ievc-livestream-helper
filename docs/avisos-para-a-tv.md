@@ -7,7 +7,7 @@ na TV da mesa de som**, que fica em outra sala. O aviso aparece na
 **parte de baixo** da TV.
 
 - Só visual (sem som), fofinho mas impossível de não ver: cartão arredondado
-  amarelo/coral, sino balançando, pulsação suave e uma barrinha mostrando quanto
+  amarelo, sino balançando, pulsação suave e uma barrinha mostrando quanto
   tempo falta.
 - O aviso some sozinho depois de **15 segundos** (dá para mudar) ou quando o
   operador clica em **Limpar**.
@@ -32,9 +32,9 @@ na TV da mesa de som**, que fica em outra sala. O aviso aparece na
 
 - **Mudar de lugar:** segure o título da janelinha e arraste. Ela lembra onde
   ficou da próxima vez que abrir.
-- **Recolher:** clique no **–**. Ela vira uma **bolinha** com o ícone do app.
-  Enquanto há aviso na TV, a bolinha mostra quantos segundos faltam.
-  Clique na bolinha para abrir de novo, ou segure e arraste para mudar de lugar.
+- **Minimizar:** clique no **–**. A janelinha vai para a **barra de tarefas**,
+  como qualquer programa. Enquanto há aviso na TV, o nome dela na barra de
+  tarefas mostra quantos segundos faltam. Clique nela na barra para voltar.
 - **Fechar:** clique no **×** (o app pergunta antes, porque o aviso da TV some).
 
 ## Mudando as mensagens

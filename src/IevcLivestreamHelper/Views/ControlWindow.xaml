@@ -1,7 +1,7 @@
 <!--
   Janelinha do operador (mesa de corte), no estilo "bichinho de estimação":
-  pequena, sempre por cima, dá para arrastar para qualquer lugar e recolher
-  numa bolinha. Daqui o operador manda os avisos para a TV da mesa de som.
+  pequena, sempre por cima, dá para arrastar para qualquer lugar e minimizar
+  para a barra de tarefas. Daqui o operador manda os avisos para a TV da mesa de som.
 -->
 <Window x:Class="IevcLivestreamHelper.Views.ControlWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -128,7 +128,6 @@
   <!-- Margem externa: espaço para a sombra aparecer. -->
   <Grid Margin="14">
 
-    <!-- ================= Modo aberto ================= -->
     <Border x:Name="ExpandedView"
             Width="320"
             Background="#FFF8F1"
@@ -147,7 +146,7 @@
             <Button Style="{StaticResource HeaderIconButton}" Content="&#xE713;"
                     ToolTip="Configurações" Click="OnToggleSettingsClick" />
             <Button Style="{StaticResource HeaderIconButton}" Content="&#xE921;"
-                    ToolTip="Recolher numa bolinha" Click="OnCollapseClick" />
+                    ToolTip="Minimizar (fica na barra de tarefas)" Click="OnMinimizeClick" />
             <Button Style="{StaticResource HeaderIconButton}" Content="&#xE8BB;"
                     ToolTip="Fechar o app" Click="OnCloseClick" />
           </StackPanel>
@@ -250,30 +249,5 @@
                    Visibility="Collapsed" />
       </StackPanel>
     </Border>
-
-    <!-- ================= Modo recolhido (bolinha) ================= -->
-    <!-- Clique para abrir; segure e arraste para mudar de lugar. -->
-    <Grid x:Name="CollapsedView" Visibility="Collapsed" Cursor="Hand"
-          ToolTip="Clique para abrir. Segure e arraste para mudar de lugar."
-          MouseLeftButtonDown="OnBubbleMouseDown">
-      <Border x:Name="Bubble"
-              Width="60" Height="60" CornerRadius="30"
-              Background="White"
-              BorderBrush="{StaticResource PanelBorderBrush}" BorderThickness="3"
-              Effect="{StaticResource SoftShadow}">
-        <Image Source="/Assets/app.ico" Margin="9" />
-      </Border>
-
-      <!-- Contador: aparece enquanto há aviso na TV. -->
-      <Border x:Name="BubbleBadge"
-              HorizontalAlignment="Right" VerticalAlignment="Top"
-              Margin="0,-4,-6,0" MinWidth="24" Height="22" CornerRadius="11"
-              Padding="5,0" Background="{StaticResource PrimaryBrush}"
-              BorderBrush="White" BorderThickness="2"
-              Visibility="Collapsed">
-        <TextBlock x:Name="BubbleBadgeText" Foreground="White" FontSize="11" FontWeight="Bold"
-                   HorizontalAlignment="Center" VerticalAlignment="Center" />
-      </Border>
-    </Grid>
   </Grid>
 </Window>
