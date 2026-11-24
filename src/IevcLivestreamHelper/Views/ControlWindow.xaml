@@ -214,6 +214,9 @@
           <Button Content="Recarregar" Style="{StaticResource SmallButton}"
                   ToolTip="Lê de novo o configuracoes.json depois de editar"
                   Click="OnReloadSettingsClick" />
+          <Button Content="Abrir registros (log)" Style="{StaticResource SmallButton}"
+                  ToolTip="Abre a pasta com os arquivos de registro, úteis quando algo dá errado"
+                  Click="OnOpenLogsClick" />
         </WrapPanel>
       </StackPanel>
     </Border>

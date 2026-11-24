@@ -40,6 +40,27 @@ jobs:
           --output publish
           -p:Version=${{ steps.versao.outputs.numero }}
 
+      # Abre o app de verdade por alguns segundos e confere o log.
+      # Pega erros que só aparecem ao rodar (ex.: o app dar erro logo ao abrir).
+      - name: Testar se o app abre sem erro
+        shell: pwsh
+        run: |
+          $pasta = Join-Path $env:RUNNER_TEMP "teste-app"
+          New-Item -ItemType Directory -Force $pasta | Out-Null
+          Copy-Item publish/IevcLivestreamHelper.exe $pasta
+
+          $app = Start-Process (Join-Path $pasta "IevcLivestreamHelper.exe") -PassThru
+          Start-Sleep -Seconds 20
+
+          $logs = Join-Path $env:LOCALAPPDATA "IEVC Livestream Helper\logs\*.txt"
+          Get-Content $logs -ErrorAction SilentlyContinue
+
+          if ($app.HasExited) { throw "O app fechou sozinho (código $($app.ExitCode))." }
+          Stop-Process -Id $app.Id -Force
+
+          if (-not (Test-Path $logs)) { throw "O app não criou o arquivo de log." }
+          if (Select-String -Path $logs -Pattern "\[ERRO\]" -Quiet) { throw "O app registrou um erro ao abrir (veja o log acima)." }
+
       - name: Guardar o .exe nesta execução
         uses: actions/upload-artifact@v4
         with:

@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using IevcLivestreamHelper.Alerts;
+using IevcLivestreamHelper.Diagnostics;
 using IevcLivestreamHelper.Hotkeys;
 using IevcLivestreamHelper.Monitors;
 using IevcLivestreamHelper.Settings;
@@ -27,16 +28,21 @@ public partial class ControlWindow : Window
     /// <summary>
     /// Verdadeiro enquanto preenchemos os campos a partir da configuração,
     /// para não salvar o arquivo à toa nesse momento.
+    /// Começa verdadeiro porque, durante o InitializeComponent, o WPF já dispara
+    /// eventos como o ValueChanged da barra de duração.
     /// </summary>
-    private bool _isFillingControls;
+    private bool _isFillingControls = true;
 
     public ControlWindow(SettingsStore settingsStore, AppSettings settings, AlertService alerts)
     {
-        InitializeComponent();
-
+        // Os campos são preenchidos ANTES do InitializeComponent, porque os eventos
+        // dos controles podem rodar no meio dele e já precisam deles.
         _settingsStore = settingsStore;
         _settings = settings;
         _alerts = alerts;
+
+        InitializeComponent();
+
         _alerts.Changed += (_, _) => UpdateStatus();
 
         // Os atalhos globais precisam da janela já criada no Windows.
@@ -68,6 +74,7 @@ public partial class ControlWindow : Window
             return;
         }
 
+        Log.Info($"Aviso enviado para {tvMonitor.DisplayName}: \"{message.Trim()}\"");
         _alerts.Show(message, TimeSpan.FromSeconds(_settings.AlertDurationSeconds), tvMonitor);
     }
 
@@ -85,6 +92,8 @@ public partial class ControlWindow : Window
     }
 
     private void OnClearClick(object sender, RoutedEventArgs e) => _alerts.Clear();
+
+    private void OnOpenLogsClick(object sender, RoutedEventArgs e) => Log.OpenFolder();
 
     private void OnTestClick(object sender, RoutedEventArgs e) =>
         SendAlert("Teste: se você está lendo isto, esta é a tela certa!");
@@ -140,6 +149,8 @@ public partial class ControlWindow : Window
 
         var monitors = MonitorList.GetAll();
         var tvMonitor = MonitorList.FindTvMonitor(_settings.TvMonitorDeviceName);
+        Log.Info($"Monitores: {string.Join("; ", monitors.Select(m => $"{m.DisplayName} [{m.DeviceName}]"))}. " +
+                 $"TV: {tvMonitor?.DisplayName ?? "nenhum"}");
 
         MonitorPicker.ItemsSource = monitors;
         MonitorPicker.SelectedItem = monitors.FirstOrDefault(m => m.DeviceName == tvMonitor?.DeviceName);
@@ -176,6 +187,9 @@ public partial class ControlWindow : Window
 
     private void ShowProblems(IReadOnlyCollection<string> problems)
     {
+        foreach (var problem in problems)
+            Log.Warning(problem);
+
         ProblemsText.Text = string.Join(Environment.NewLine, problems.Select(p => "⚠ " + p));
         ProblemsText.Visibility = problems.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
     }

@@ -58,6 +58,19 @@ A pessoa que conversa com você pode não ser programadora. Então:
 - **Não suba** o `configuracoes.json` de ninguém, `bin/`, `obj/` ou `publish/`
   (já estão no `.gitignore`).
 
+## Investigando erros
+
+- O app grava um log em `%LocalAppData%\IEVC Livestream Helper\logs\log-AAAA-MM-DD.txt`
+  (veja `Diagnostics/Log.cs`). Erros saem com o detalhe completo (stack trace).
+- Quando alguém relatar um erro, **peça o arquivo de log primeiro**, explicando
+  como achá-lo (botão **Abrir registros (log)** na janela do app, ou a seção
+  "Deu algum erro?" do README).
+- Ao adicionar código novo, registre no log os momentos importantes (`Log.Info`)
+  e os problemas (`Log.Warning` / `Log.Error`). Não registre nada pessoal.
+- Cuidado com eventos de controles WPF que disparam **durante o
+  `InitializeComponent`** (ex.: `ValueChanged` de um `Slider` com `Minimum`).
+  Os campos usados por esses eventos precisam estar prontos antes dele.
+
 ## Código claro
 
 O código foi escrito para ser lido por quem está aprendendo. Mantenha assim:
@@ -94,6 +107,9 @@ dotnet publish src/IevcLivestreamHelper -c Release -o publish
   Windows**. Se você não consegue executar o app, diga isso claramente à pessoa
   e peça para ela testar no computador do OBS.
 - Antes de entregar, o build deve passar **sem erros e sem avisos**.
+- O GitHub Actions também **abre o app de verdade** no Windows por alguns
+  segundos e falha se o log tiver algum `[ERRO]`. Se esse passo falhar, o log
+  aparece na saída do passo.
 - Não há testes automatizados de interface. Ao mudar algo visual ou de janela,
   deixe para a pessoa um **roteiro curto de teste**, por exemplo:
   1. Abrir o app e clicar em **Testar**: o aviso aparece na TV?
