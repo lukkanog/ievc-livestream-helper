@@ -15,7 +15,7 @@ namespace IevcLivestreamHelper;
 /// </summary>
 public partial class App : Application
 {
-    public const string AppTitle = "Sininho da Live";
+    public const string AppTitle = "IEVC Livestream Helper";
 
     /// <summary>Impede abrir o app duas vezes (os atalhos iriam brigar entre si).</summary>
     private Mutex? _singleInstanceLock;
@@ -25,10 +25,10 @@ public partial class App : Application
         base.OnStartup(e);
         DispatcherUnhandledException += OnUnexpectedError;
 
-        _singleInstanceLock = new Mutex(initiallyOwned: true, "IevcLivestreamHelper.Sininho", out var isFirstInstance);
+        _singleInstanceLock = new Mutex(initiallyOwned: true, "IevcLivestreamHelper.SingleInstance", out var isFirstInstance);
         if (!isFirstInstance)
         {
-            MessageBox.Show("O Sininho já está aberto. Procure o ícone dele na barra de tarefas.",
+            MessageBox.Show("O IEVC Livestream Helper já está aberto. Procure o ícone dele na barra de tarefas.",
                 AppTitle, MessageBoxButton.OK, MessageBoxImage.Information);
             Shutdown();
             return;

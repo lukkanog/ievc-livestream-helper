@@ -3,12 +3,12 @@
 
   Ela cobre o monitor inteiro, mas é transparente, fica sempre por cima
   (inclusive do projetor em tela cheia do OBS), não recebe cliques e nunca
-  rouba o foco. Só o "cartão" com o sininho e a mensagem fica visível.
+  rouba o foco. Só o "cartão" com o sino e a mensagem fica visível.
 -->
 <Window x:Class="IevcLivestreamHelper.Views.OverlayWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Sininho — aviso na TV"
+        Title="IEVC Livestream Helper — aviso na TV"
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
@@ -72,7 +72,7 @@
         </Grid.RowDefinitions>
 
         <DockPanel>
-          <!-- Sininho num círculo branco. -->
+          <!-- Sino num círculo branco. -->
           <Border DockPanel.Dock="Left"
                   Width="170" Height="170"
                   CornerRadius="85"

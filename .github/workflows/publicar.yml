@@ -1,4 +1,4 @@
-# Gera o SininhoDaLive.exe e publica em "Releases" no GitHub.
+# Gera o IevcLivestreamHelper.exe e publica em "Releases" no GitHub.
 #
 # - Push na main  → compila e cria uma Release nova (v1.0.<número da execução>)
 # - Pull request  → só compila, para conferir que está tudo certo
@@ -43,16 +43,16 @@ jobs:
       - name: Guardar o .exe nesta execução
         uses: actions/upload-artifact@v4
         with:
-          name: SininhoDaLive-${{ steps.versao.outputs.numero }}
-          path: publish/SininhoDaLive.exe
+          name: IevcLivestreamHelper-${{ steps.versao.outputs.numero }}
+          path: publish/IevcLivestreamHelper.exe
 
       - name: Publicar a Release
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.versao.outputs.numero }}
-          name: Sininho da Live v${{ steps.versao.outputs.numero }}
+          name: IEVC Livestream Helper v${{ steps.versao.outputs.numero }}
           target_commitish: ${{ github.sha }}
-          files: publish/SininhoDaLive.exe
+          files: publish/IevcLivestreamHelper.exe
           generate_release_notes: true
           make_latest: true

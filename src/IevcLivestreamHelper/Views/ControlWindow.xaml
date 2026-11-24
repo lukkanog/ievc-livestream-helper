@@ -5,8 +5,8 @@
 <Window x:Class="IevcLivestreamHelper.Views.ControlWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Sininho da Live — IEVC"
-        Icon="/Assets/sininho.ico"
+        Title="IEVC Livestream Helper"
+        Icon="/Assets/app.ico"
         Width="560"
         SizeToContent="Height"
         ResizeMode="CanMinimize"
@@ -106,9 +106,9 @@
 
     <!-- ===== Cabeçalho ===== -->
     <DockPanel Margin="0,0,0,14">
-      <Image Source="/Assets/sininho.ico" Width="48" Height="48" Margin="0,0,12,0" />
+      <Image Source="/Assets/app.ico" Width="48" Height="48" Margin="0,0,12,0" />
       <StackPanel VerticalAlignment="Center">
-        <TextBlock Text="Sininho da Live" FontSize="22" FontWeight="Bold" />
+        <TextBlock Text="IEVC Livestream Helper" FontSize="22" FontWeight="Bold" />
         <TextBlock Text="Avisos da mesa de corte para a TV da mesa de som"
                    Foreground="{StaticResource MutedTextBrush}" />
       </StackPanel>
