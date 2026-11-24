@@ -14,8 +14,11 @@ namespace IevcLivestreamHelper.Views;
 /// </summary>
 public partial class OverlayWindow : Window
 {
-    /// <summary>Distância (acima da tela) de onde o cartão entra e para onde ele sai.</summary>
-    private const double OffscreenY = -700;
+    /// <summary>
+    /// Distância (abaixo da tela) de onde o cartão entra e para onde ele sai.
+    /// O cartão fica na parte de baixo da TV.
+    /// </summary>
+    private const double OffscreenY = 700;
 
     private readonly nint _handle;
 
@@ -89,7 +92,7 @@ public partial class OverlayWindow : Window
 
     // ----- Animações -----
 
-    /// <summary>O cartão desce do topo e dá uma leve "quicada".</summary>
+    /// <summary>O cartão sobe de baixo e dá uma leve "quicada".</summary>
     private void PlayEntrance()
     {
         CardSlide.BeginAnimation(TranslateTransform.YProperty, new DoubleAnimation(OffscreenY, 0, TimeSpan.FromMilliseconds(750))

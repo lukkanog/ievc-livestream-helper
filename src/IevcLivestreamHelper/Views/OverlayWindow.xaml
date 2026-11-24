@@ -39,8 +39,8 @@
 
     <Border x:Name="Card"
             Grid.Column="1"
-            VerticalAlignment="Top"
-            Margin="0,56,0,0"
+            VerticalAlignment="Bottom"
+            Margin="0,0,0,56"
             Padding="44,36,44,32"
             CornerRadius="44"
             BorderBrush="White"
@@ -60,7 +60,7 @@
         <TransformGroup>
           <!-- "Respiração" suave do cartão. -->
           <ScaleTransform x:Name="CardPulse" />
-          <!-- Entrada deslizando de cima. -->
+          <!-- Entrada deslizando de baixo. -->
           <TranslateTransform x:Name="CardSlide" />
         </TransformGroup>
       </Border.RenderTransform>
