@@ -14,17 +14,12 @@ namespace IevcLivestreamHelper.Views;
 /// <summary>
 /// Janelinha flutuante do operador: botões de aviso, mensagem personalizada,
 /// limpar e configurações. Fica sempre por cima, pode ser arrastada e
-/// recolhida numa bolinha.
+/// minimizada para a barra de tarefas.
 /// </summary>
 public partial class ControlWindow : Window
 {
     private static readonly Brush IdleStatusBackground = new SolidColorBrush(Color.FromRgb(0xEE, 0xF7, 0xEE));
     private static readonly Brush ActiveStatusBackground = new SolidColorBrush(Color.FromRgb(0xFF, 0xEF, 0xC2));
-    private static readonly Brush IdleBubbleBorder = new SolidColorBrush(Color.FromRgb(0xE3, 0xCD, 0xB9));
-    private static readonly Brush ActiveBubbleBorder = new SolidColorBrush(Color.FromRgb(0xC4, 0x3D, 0x1F));
-
-    /// <summary>Quanto o mouse pode mexer num clique sem que ele vire "arrastar".</summary>
-    private const double ClickTolerance = 4;
 
     private readonly SettingsStore _settingsStore;
     private readonly AlertService _alerts;
@@ -111,7 +106,10 @@ public partial class ControlWindow : Window
     private void OnTestClick(object sender, RoutedEventArgs e) =>
         SendAlert("Teste: se você está lendo isto, esta é a tela certa!");
 
-    /// <summary>Atualiza a faixa "o que está na TV agora" e o contador da bolinha.</summary>
+    /// <summary>
+    /// Atualiza a faixa "o que está na TV agora" e o título da janela
+    /// (que aparece na barra de tarefas quando ela está minimizada).
+    /// </summary>
     private void UpdateStatus()
     {
         if (_alerts.IsShowing)
@@ -119,22 +117,17 @@ public partial class ControlWindow : Window
             var secondsLeft = (int)Math.Ceiling(_alerts.TimeLeft.TotalSeconds);
             StatusText.Text = $"Na TV agora: “{_alerts.CurrentMessage}” — some em {secondsLeft} s";
             StatusPanel.Background = ActiveStatusBackground;
-
-            BubbleBadgeText.Text = secondsLeft.ToString();
-            BubbleBadge.Visibility = Visibility.Visible;
-            Bubble.BorderBrush = ActiveBubbleBorder;
+            Title = $"Na TV ({secondsLeft} s) — {App.AppTitle}";
         }
         else
         {
             StatusText.Text = "Nenhum aviso na TV.";
             StatusPanel.Background = IdleStatusBackground;
-
-            BubbleBadge.Visibility = Visibility.Collapsed;
-            Bubble.BorderBrush = IdleBubbleBorder;
+            Title = App.AppTitle;
         }
     }
 
-    // ===== Janelinha: arrastar, recolher, fechar =====
+    // ===== Janelinha: arrastar, minimizar, fechar =====
 
     /// <summary>Segurar o cabeçalho e arrastar muda a janelinha de lugar.</summary>
     private void OnDragAreaMouseDown(object sender, MouseButtonEventArgs e)
@@ -143,23 +136,8 @@ public partial class ControlWindow : Window
         SavePosition();
     }
 
-    /// <summary>
-    /// Na bolinha, o mesmo gesto serve para duas coisas:
-    /// se o mouse quase não andou, foi um clique (abre); se andou, foi um arraste.
-    /// </summary>
-    private void OnBubbleMouseDown(object sender, MouseButtonEventArgs e)
-    {
-        var before = new Point(Left, Top);
-        DragMove(); // só volta quando o botão do mouse é solto
-
-        var moved = Math.Abs(Left - before.X) > ClickTolerance || Math.Abs(Top - before.Y) > ClickTolerance;
-        if (moved)
-            SavePosition();
-        else
-            SetCollapsed(false);
-    }
-
-    private void OnCollapseClick(object sender, RoutedEventArgs e) => SetCollapsed(true);
+    /// <summary>Minimiza do jeito normal: a janelinha vai para a barra de tarefas.</summary>
+    private void OnMinimizeClick(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
 
     private void OnToggleSettingsClick(object sender, RoutedEventArgs e)
     {
@@ -177,17 +155,6 @@ public partial class ControlWindow : Window
 
         if (answer == MessageBoxResult.Yes)
             Close();
-    }
-
-    /// <summary>Troca entre a janelinha aberta e a bolinha, sem "pular" de lugar na tela.</summary>
-    private void SetCollapsed(bool collapsed)
-    {
-        var right = Left + ActualWidth;
-
-        ExpandedView.Visibility = collapsed ? Visibility.Collapsed : Visibility.Visible;
-        CollapsedView.Visibility = collapsed ? Visibility.Visible : Visibility.Collapsed;
-
-        KeepRightEdge(right);
     }
 
     /// <summary>
