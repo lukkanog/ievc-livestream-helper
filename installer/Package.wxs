@@ -1,0 +1,102 @@
+<!--
+  O que o instalador faz:
+  - Assistente em português: Bem-vindo → Pasta de instalação → Instalar → Concluir.
+  - Instala para todos os usuários em "Arquivos de Programas\IEVC Livestream Helper"
+    (pede permissão de administrador).
+  - Cria atalhos no Menu Iniciar e na Área de Trabalho.
+  - Aparece em "Aplicativos instalados" / "Programas e Recursos", com as opções
+    Reparar e Remover. Rodar o .msi de novo também oferece Reparar/Remover.
+  - Versão nova instala por cima da antiga sozinha (sem precisar desinstalar).
+  - As configurações (%AppData%\IEVC Livestream Helper) são mantidas ao atualizar
+    ou desinstalar.
+-->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui"
+     xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
+
+  <!--
+    UpgradeCode: identidade permanente do app para o Windows.
+    NUNCA mude este valor, senão as atualizações não substituem a versão antiga.
+  -->
+  <Package Name="IEVC Livestream Helper"
+           Manufacturer="IEVC"
+           Version="$(Version)"
+           UpgradeCode="1E91823C-1E08-4C60-B650-430D910EBE14"
+           Scope="perMachine"
+           Language="1046">
+
+    <SummaryInformation Description="Ferramentas de apoio para a transmissão da IEVC" />
+
+    <!-- Atualizar = remover a versão antiga e instalar a nova, automaticamente. -->
+    <MajorUpgrade DowngradeErrorMessage="Já existe uma versão mais nova do IEVC Livestream Helper instalada." />
+
+    <!-- Tudo dentro de um único .msi (sem arquivos .cab separados). -->
+    <MediaTemplate EmbedCab="yes" />
+
+    <!--
+      Ícone e links em "Aplicativos instalados".
+      O ícone vem do próprio .exe, e o Id precisa terminar em ".exe": o Windows
+      Installer exige isso para atalhos "anunciados" (regra ICE50).
+    -->
+    <Icon Id="AppIcon.exe" SourceFile="$(AppPublishDir)IevcLivestreamHelper.exe" />
+    <Property Id="ARPPRODUCTICON" Value="AppIcon.exe" />
+    <Property Id="ARPHELPLINK" Value="https://github.com/lukkanog/ievc-livestream-helper" />
+    <Property Id="ARPURLINFOABOUT" Value="https://github.com/lukkanog/ievc-livestream-helper" />
+
+    <!-- ===== Pastas ===== -->
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="IEVC Livestream Helper" />
+    </StandardDirectory>
+    <StandardDirectory Id="ProgramMenuFolder" />
+    <StandardDirectory Id="DesktopFolder" />
+
+    <!-- ===== Arquivos e atalhos ===== -->
+    <Feature Id="App" Title="IEVC Livestream Helper">
+      <Component Directory="INSTALLFOLDER">
+        <File Id="AppExe" Source="$(AppPublishDir)IevcLivestreamHelper.exe" KeyPath="yes">
+          <!--
+            Atalhos "anunciados" (Advertise): ao abrir pelo atalho, o Windows confere
+            se a instalação está inteira e se repara sozinho se faltar algo.
+          -->
+          <Shortcut Id="StartMenuShortcut"
+                    Directory="ProgramMenuFolder"
+                    Name="IEVC Livestream Helper"
+                    Description="Ferramentas de apoio para a transmissão da IEVC"
+                    WorkingDirectory="INSTALLFOLDER"
+                    Icon="AppIcon.exe"
+                    Advertise="yes" />
+          <Shortcut Id="DesktopShortcut"
+                    Directory="DesktopFolder"
+                    Name="IEVC Livestream Helper"
+                    Description="Ferramentas de apoio para a transmissão da IEVC"
+                    WorkingDirectory="INSTALLFOLDER"
+                    Icon="AppIcon.exe"
+                    Advertise="yes" />
+        </File>
+      </Component>
+    </Feature>
+
+    <!-- ===== Assistente (telas) ===== -->
+    <UI>
+      <ui:WixUI Id="WixUI_InstallDir" InstallDirectory="INSTALLFOLDER" />
+
+      <!-- Pula a tela de licença: Bem-vindo vai direto para a escolha da pasta. -->
+      <Publish Dialog="WelcomeDlg" Control="Next" Event="NewDialog" Value="InstallDirDlg" Order="2" Condition="NOT Installed" />
+      <Publish Dialog="InstallDirDlg" Control="Back" Event="NewDialog" Value="WelcomeDlg" Order="2" Condition="NOT Installed" />
+
+      <!-- Na última tela, a caixinha "Abrir agora" abre o app ao clicar em Concluir. -->
+      <Publish Dialog="ExitDialog" Control="Finish" Event="DoAction" Value="LaunchApp"
+               Condition="WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 AND NOT Installed" />
+    </UI>
+
+    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Abrir o IEVC Livestream Helper agora" />
+    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOX" Value="1" />
+
+    <!-- Abre o app como o usuário (e não como administrador). -->
+    <Property Id="WixShellExecTarget" Value="[#AppExe]" />
+    <CustomAction Id="LaunchApp"
+                  BinaryRef="Wix4UtilCA_$(sys.BUILDARCHSHORT)"
+                  DllEntry="WixShellExec"
+                  Impersonate="yes" />
+  </Package>
+</Wix>

@@ -18,7 +18,7 @@ public partial class App : Application
 {
     public const string AppTitle = "IEVC Livestream Helper";
 
-    /// <summary>Impede abrir o app duas vezes (os atalhos iriam brigar entre si).</summary>
+    /// <summary>Impede abrir o app duas vezes (duas janelinhas mandando avisos para a mesma TV).</summary>
     private Mutex? _singleInstanceLock;
 
     protected override void OnStartup(StartupEventArgs e)

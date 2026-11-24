@@ -1,0 +1,38 @@
+<!--
+  Instalador .msi do IEVC Livestream Helper (feito com WiX Toolset 5).
+
+  Ele empacota o .exe portátil já gerado pelo "dotnet publish". Ordem:
+    1. dotnet publish src/IevcLivestreamHelper -c Release -o publish
+    2. dotnet build installer -c Release
+
+  Só compila no Windows (o WiX usa o próprio Windows Installer para montar o .msi).
+
+  Usamos o WiX 5 de propósito: as versões 6 e 7 exigem aceitar uma licença
+  com taxa de manutenção (OSMF). O WiX 5 é MIT, sem condições.
+-->
+<Project Sdk="WixToolset.Sdk/5.0.2">
+
+  <PropertyGroup>
+    <OutputName>IevcLivestreamHelper</OutputName>
+    <InstallerPlatform>x64</InstallerPlatform>
+
+    <!-- Textos do assistente de instalação em português do Brasil. -->
+    <Cultures>pt-BR</Cultures>
+
+    <!-- A versão é sobrescrita pelo GitHub Actions (-p:Version=...). -->
+    <Version Condition="'$(Version)' == ''">1.0.0</Version>
+
+    <!-- Pasta onde está o IevcLivestreamHelper.exe gerado pelo "dotnet publish". -->
+    <AppPublishDir Condition="'$(AppPublishDir)' == ''">$(MSBuildThisFileDirectory)..\publish\</AppPublishDir>
+
+    <DefineConstants>Version=$(Version);AppPublishDir=$(AppPublishDir)</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Telas prontas do assistente (Bem-vindo, Pasta, Reparar/Remover...). -->
+    <PackageReference Include="WixToolset.UI.wixext" Version="5.0.2" />
+    <!-- Usado para abrir o app ao final da instalação. -->
+    <PackageReference Include="WixToolset.Util.wixext" Version="5.0.2" />
+  </ItemGroup>
+
+</Project>

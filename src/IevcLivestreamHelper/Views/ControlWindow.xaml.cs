@@ -2,28 +2,33 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using IevcLivestreamHelper.Alerts;
 using IevcLivestreamHelper.Diagnostics;
-using IevcLivestreamHelper.Hotkeys;
 using IevcLivestreamHelper.Monitors;
 using IevcLivestreamHelper.Settings;
 
 namespace IevcLivestreamHelper.Views;
 
 /// <summary>
-/// Janela do operador: botões de mensagem, mensagem personalizada,
-/// botão de limpar e configurações.
+/// Janelinha flutuante do operador: botões de aviso, mensagem personalizada,
+/// limpar e configurações. Fica sempre por cima, pode ser arrastada e
+/// recolhida numa bolinha.
 /// </summary>
 public partial class ControlWindow : Window
 {
     private static readonly Brush IdleStatusBackground = new SolidColorBrush(Color.FromRgb(0xEE, 0xF7, 0xEE));
     private static readonly Brush ActiveStatusBackground = new SolidColorBrush(Color.FromRgb(0xFF, 0xEF, 0xC2));
+    private static readonly Brush IdleBubbleBorder = new SolidColorBrush(Color.FromRgb(0xF1, 0xDF, 0xCF));
+    private static readonly Brush ActiveBubbleBorder = new SolidColorBrush(Color.FromRgb(0xFF, 0x7A, 0x59));
+
+    /// <summary>Quanto o mouse pode mexer num clique sem que ele vire "arrastar".</summary>
+    private const double ClickTolerance = 4;
 
     private readonly SettingsStore _settingsStore;
     private readonly AlertService _alerts;
     private AppSettings _settings;
-    private GlobalHotkeyManager? _hotkeys;
 
     /// <summary>
     /// Verdadeiro enquanto preenchemos os campos a partir da configuração,
@@ -44,19 +49,10 @@ public partial class ControlWindow : Window
         InitializeComponent();
 
         _alerts.Changed += (_, _) => UpdateStatus();
+        Loaded += (_, _) => PlaceWindowOnStart();
+        Closed += (_, _) => _alerts.Clear();
 
-        // Os atalhos globais precisam da janela já criada no Windows.
-        SourceInitialized += (_, _) =>
-        {
-            _hotkeys = new GlobalHotkeyManager(this);
-            ApplySettings();
-        };
-
-        Closed += (_, _) =>
-        {
-            _hotkeys?.Dispose();
-            _alerts.Clear();
-        };
+        ApplySettings();
     }
 
     // ===== Enviar e limpar avisos =====
@@ -70,7 +66,7 @@ public partial class ControlWindow : Window
         var tvMonitor = MonitorList.FindTvMonitor(_settings.TvMonitorDeviceName);
         if (tvMonitor is null)
         {
-            ShowProblems(["Nenhum monitor encontrado para mostrar o aviso."]);
+            ShowProblem("Nenhum monitor encontrado para mostrar o aviso.");
             return;
         }
 
@@ -80,25 +76,33 @@ public partial class ControlWindow : Window
 
     private void OnQuickMessageClick(object sender, RoutedEventArgs e)
     {
-        if (sender is FrameworkElement { DataContext: QuickMessageItem item })
-            SendAlert(item.Text);
+        if (sender is FrameworkElement { DataContext: QuickMessage message })
+            SendAlert(message.Text);
     }
 
-    private void OnSendCustomMessageClick(object sender, RoutedEventArgs e)
+    private void OnSendCustomMessageClick(object sender, RoutedEventArgs e) => SendCustomMessage();
+
+    private void OnCustomMessageKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter)
+        {
+            SendCustomMessage();
+            e.Handled = true;
+        }
+    }
+
+    private void SendCustomMessage()
     {
         SendAlert(CustomMessageBox.Text);
         CustomMessageBox.Clear();
-        CustomMessageBox.Focus();
     }
 
     private void OnClearClick(object sender, RoutedEventArgs e) => _alerts.Clear();
 
-    private void OnOpenLogsClick(object sender, RoutedEventArgs e) => Log.OpenFolder();
-
     private void OnTestClick(object sender, RoutedEventArgs e) =>
         SendAlert("Teste: se você está lendo isto, esta é a tela certa!");
 
-    /// <summary>Atualiza a faixa "o que está na TV agora".</summary>
+    /// <summary>Atualiza a faixa "o que está na TV agora" e o contador da bolinha.</summary>
     private void UpdateStatus()
     {
         if (_alerts.IsShowing)
@@ -106,28 +110,133 @@ public partial class ControlWindow : Window
             var secondsLeft = (int)Math.Ceiling(_alerts.TimeLeft.TotalSeconds);
             StatusText.Text = $"Na TV agora: “{_alerts.CurrentMessage}” — some em {secondsLeft} s";
             StatusPanel.Background = ActiveStatusBackground;
+
+            BubbleBadgeText.Text = secondsLeft.ToString();
+            BubbleBadge.Visibility = Visibility.Visible;
+            Bubble.BorderBrush = ActiveBubbleBorder;
         }
         else
         {
             StatusText.Text = "Nenhum aviso na TV.";
             StatusPanel.Background = IdleStatusBackground;
+
+            BubbleBadge.Visibility = Visibility.Collapsed;
+            Bubble.BorderBrush = IdleBubbleBorder;
         }
+    }
+
+    // ===== Janelinha: arrastar, recolher, fechar =====
+
+    /// <summary>Segurar o cabeçalho e arrastar muda a janelinha de lugar.</summary>
+    private void OnDragAreaMouseDown(object sender, MouseButtonEventArgs e)
+    {
+        DragMove();
+        SavePosition();
+    }
+
+    /// <summary>
+    /// Na bolinha, o mesmo gesto serve para duas coisas:
+    /// se o mouse quase não andou, foi um clique (abre); se andou, foi um arraste.
+    /// </summary>
+    private void OnBubbleMouseDown(object sender, MouseButtonEventArgs e)
+    {
+        var before = new Point(Left, Top);
+        DragMove(); // só volta quando o botão do mouse é solto
+
+        var moved = Math.Abs(Left - before.X) > ClickTolerance || Math.Abs(Top - before.Y) > ClickTolerance;
+        if (moved)
+            SavePosition();
+        else
+            SetCollapsed(false);
+    }
+
+    private void OnCollapseClick(object sender, RoutedEventArgs e) => SetCollapsed(true);
+
+    private void OnToggleSettingsClick(object sender, RoutedEventArgs e)
+    {
+        var right = Left + ActualWidth;
+        SettingsPanel.Visibility = SettingsPanel.IsVisible ? Visibility.Collapsed : Visibility.Visible;
+        KeepRightEdge(right);
+    }
+
+    /// <summary>Fechar encerra o app e tira o aviso da TV, então confirmamos antes.</summary>
+    private void OnCloseClick(object sender, RoutedEventArgs e)
+    {
+        var answer = MessageBox.Show(this,
+            "Fechar o IEVC Livestream Helper?\n\nSe houver um aviso na TV, ele some.",
+            App.AppTitle, MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+        if (answer == MessageBoxResult.Yes)
+            Close();
+    }
+
+    /// <summary>Troca entre a janelinha aberta e a bolinha, sem "pular" de lugar na tela.</summary>
+    private void SetCollapsed(bool collapsed)
+    {
+        var right = Left + ActualWidth;
+
+        ExpandedView.Visibility = collapsed ? Visibility.Collapsed : Visibility.Visible;
+        CollapsedView.Visibility = collapsed ? Visibility.Visible : Visibility.Collapsed;
+
+        KeepRightEdge(right);
+    }
+
+    /// <summary>
+    /// Depois de mudar de tamanho, mantém a borda direita no mesmo lugar
+    /// (a janela "cresce para a esquerda"), e garante que ela continua visível.
+    /// </summary>
+    private void KeepRightEdge(double right)
+    {
+        UpdateLayout();
+        Left = right - ActualWidth;
+        KeepInsideScreen();
+        SavePosition();
+    }
+
+    /// <summary>Abre onde estava da última vez, ou no canto inferior direito da tela principal.</summary>
+    private void PlaceWindowOnStart()
+    {
+        if (_settings.ControlWindowPosition is { } saved)
+        {
+            Left = saved.Left;
+            Top = saved.Top;
+        }
+        else
+        {
+            var workArea = SystemParameters.WorkArea;
+            Left = workArea.Right - ActualWidth;
+            Top = workArea.Bottom - ActualHeight;
+        }
+
+        KeepInsideScreen();
+    }
+
+    /// <summary>Se a janela ficou fora da tela (ex.: um monitor foi desligado), traz de volta.</summary>
+    private void KeepInsideScreen()
+    {
+        var screenLeft = SystemParameters.VirtualScreenLeft;
+        var screenTop = SystemParameters.VirtualScreenTop;
+        var screenRight = screenLeft + SystemParameters.VirtualScreenWidth;
+        var screenBottom = screenTop + SystemParameters.VirtualScreenHeight;
+
+        Left = Math.Max(screenLeft, Math.Min(Left, screenRight - ActualWidth));
+        Top = Math.Max(screenTop, Math.Min(Top, screenBottom - ActualHeight));
+    }
+
+    private void SavePosition()
+    {
+        _settings.ControlWindowPosition = new WindowPosition { Left = Left, Top = Top };
+        SaveSettings();
     }
 
     // ===== Configurações =====
 
-    /// <summary>Preenche a janela e registra os atalhos de acordo com a configuração atual.</summary>
+    /// <summary>Preenche a janela de acordo com a configuração atual.</summary>
     private void ApplySettings()
     {
         _isFillingControls = true;
 
-        QuickMessagesList.ItemsSource = _settings.QuickMessages
-            .Select(message => new QuickMessageItem(message.Text, message.Hotkey ?? ""))
-            .ToList();
-
-        ClearButton.Content = string.IsNullOrWhiteSpace(_settings.ClearHotkey)
-            ? "Limpar aviso da TV"
-            : $"Limpar aviso da TV   ({_settings.ClearHotkey})";
+        QuickMessagesList.ItemsSource = _settings.QuickMessages;
 
         DurationSlider.Maximum = Math.Max(120, _settings.AlertDurationSeconds);
         DurationSlider.Value = _settings.AlertDurationSeconds;
@@ -137,7 +246,7 @@ public partial class ControlWindow : Window
 
         _isFillingControls = false;
 
-        RegisterHotkeys();
+        ShowProblem(null);
         UpdateStatus();
     }
 
@@ -158,46 +267,20 @@ public partial class ControlWindow : Window
         _isFillingControls = wasFilling;
     }
 
-    private void RegisterHotkeys()
+    /// <summary>Mostra um problema na parte de baixo da janela (ou esconde, se for null).</summary>
+    private void ShowProblem(string? problem)
     {
-        if (_hotkeys is null)
-            return;
-
-        _hotkeys.UnregisterAll();
-        var problems = new List<string>();
-
-        TryRegisterHotkey(_settings.ClearHotkey, _alerts.Clear, problems);
-
-        foreach (var message in _settings.QuickMessages)
-            TryRegisterHotkey(message.Hotkey, () => SendAlert(message.Text), problems);
-
-        ShowProblems(problems);
-    }
-
-    private void TryRegisterHotkey(string? hotkeyText, Action action, List<string> problems)
-    {
-        if (string.IsNullOrWhiteSpace(hotkeyText))
-            return; // atalho opcional
-
-        if (!Hotkey.TryParse(hotkeyText, out var hotkey) || hotkey is null)
-            problems.Add($"Não entendi o atalho \"{hotkeyText}\". Use algo como \"Ctrl+Alt+1\" ou \"F9\".");
-        else if (!_hotkeys!.Register(hotkey, action))
-            problems.Add($"O atalho {hotkeyText} já está sendo usado por outro programa.");
-    }
-
-    private void ShowProblems(IReadOnlyCollection<string> problems)
-    {
-        foreach (var problem in problems)
+        if (problem is not null)
             Log.Warning(problem);
 
-        ProblemsText.Text = string.Join(Environment.NewLine, problems.Select(p => "⚠ " + p));
-        ProblemsText.Visibility = problems.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        ProblemsText.Text = problem is null ? "" : "⚠ " + problem;
+        ProblemsText.Visibility = problem is null ? Visibility.Collapsed : Visibility.Visible;
     }
 
     private void SaveSettings()
     {
         if (!_settingsStore.TrySave(_settings))
-            ShowProblems([$"Não consegui salvar em \"{_settingsStore.FilePath}\". A pasta pode estar protegida."]);
+            ShowProblem($"Não consegui salvar em \"{_settingsStore.FilePath}\". A pasta pode estar protegida.");
     }
 
     private void OnMonitorPickerChanged(object sender, SelectionChangedEventArgs e)
@@ -245,11 +328,10 @@ public partial class ControlWindow : Window
 
         if (error is not null)
         {
-            MessageBox.Show($"{error}\n\nPor enquanto vou usar as configurações padrão.",
+            MessageBox.Show(this, $"{error}\n\nPor enquanto vou usar as configurações padrão.",
                 App.AppTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
 
-    /// <summary>O que cada botão de mensagem rápida mostra.</summary>
-    public sealed record QuickMessageItem(string Text, string HotkeyLabel);
+    private void OnOpenLogsClick(object sender, RoutedEventArgs e) => Log.OpenFolder();
 }

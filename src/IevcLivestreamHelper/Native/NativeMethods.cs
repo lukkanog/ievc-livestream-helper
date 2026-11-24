@@ -4,7 +4,7 @@ namespace IevcLivestreamHelper.Native;
 
 /// <summary>
 /// Chamadas diretas à API do Windows (user32.dll) que o WPF não oferece pronto:
-/// atalhos globais, lista de monitores e janela "fantasma" (que não recebe cliques).
+/// lista de monitores e janela "fantasma" (que não recebe cliques).
 /// </summary>
 internal static class NativeMethods
 {
@@ -50,26 +50,6 @@ internal static class NativeMethods
     [DllImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static extern bool SetWindowDisplayAffinity(nint hWnd, uint dwAffinity);
-
-    // ----- Atalhos globais -----
-
-    public const int WM_HOTKEY = 0x0312;
-
-    public const uint MOD_ALT = 0x0001;
-    public const uint MOD_CONTROL = 0x0002;
-    public const uint MOD_SHIFT = 0x0004;
-    public const uint MOD_WIN = 0x0008;
-
-    /// <summary>Segurar a tecla não dispara o atalho várias vezes.</summary>
-    public const uint MOD_NOREPEAT = 0x4000;
-
-    [DllImport("user32.dll", SetLastError = true)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    public static extern bool RegisterHotKey(nint hWnd, int id, uint fsModifiers, uint vk);
-
-    [DllImport("user32.dll", SetLastError = true)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    public static extern bool UnregisterHotKey(nint hWnd, int id);
 
     // ----- Monitores -----
 
