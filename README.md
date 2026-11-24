@@ -65,7 +65,7 @@ Os registros com mais de 14 dias são apagados sozinhos.
 
 ## Quer mudar alguma coisa?
 
-- **Mensagens, atalhos, duração e tela da TV** não precisam de programação:
+- **Mensagens, duração e tela da TV** não precisam de programação:
   veja a página de ajuda do helper (ex.: [Avisos para a TV](docs/avisos-para-a-tv.md)).
 - **Quer usar uma IA (Claude, ChatGPT, Copilot…) para mudar o app?** Pode! As
   regras para a IA estão no [AGENTS.md](AGENTS.md). Peça em português, do seu
@@ -79,10 +79,9 @@ Feito em **C# + WPF (.NET 10)**.
 src/IevcLivestreamHelper/
 ├── App.xaml(.cs)            Início do app: carrega a configuração e abre as janelas
 ├── Views/
-│   ├── ControlWindow        Janela do operador
+│   ├── ControlWindow        Janelinha flutuante do operador
 │   └── OverlayWindow        Aviso desenhado por cima da TV
 ├── Alerts/AlertService.cs   Qual aviso está na TV e quanto tempo falta
-├── Hotkeys/                 Atalhos globais de teclado
 ├── Monitors/                Lista de monitores e escolha da TV
 ├── Settings/                Leitura e gravação do configuracoes.json
 ├── Diagnostics/Log.cs       Registro (log) em arquivo texto

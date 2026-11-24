@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 namespace IevcLivestreamHelper.Settings;
 
 /// <summary>
-/// Tudo que o app guarda no arquivo "configuracoes.json" (ao lado do .exe).
+/// Tudo que o app guarda no arquivo "configuracoes.json".
 /// Os nomes entre aspas são os que aparecem no arquivo, em português,
 /// para facilitar a edição à mão.
 /// </summary>
@@ -14,7 +14,7 @@ public sealed class AppSettings
 
     /// <summary>Quanto tempo o aviso fica na TV antes de sumir sozinho.</summary>
     [JsonPropertyName("duracaoDoAvisoEmSegundos")]
-    public int AlertDurationSeconds { get; set; } = 30;
+    public int AlertDurationSeconds { get; set; } = 15;
 
     /// <summary>
     /// Nome interno do monitor da TV no Windows (ex.: "\\.\DISPLAY2").
@@ -23,17 +23,20 @@ public sealed class AppSettings
     [JsonPropertyName("telaDaTv")]
     public string? TvMonitorDeviceName { get; set; }
 
-    /// <summary>Atalho para tirar o aviso da TV.</summary>
-    [JsonPropertyName("atalhoParaLimpar")]
-    public string ClearHotkey { get; set; } = "Ctrl+Alt+0";
-
     /// <summary>Botões de mensagem rápida.</summary>
     [JsonPropertyName("mensagensRapidas")]
     public List<QuickMessage> QuickMessages { get; set; } =
     [
-        new() { Text = "O áudio não está chegando", Hotkey = "Ctrl+Alt+1" },
-        new() { Text = "Favor colocar o fone/headset", Hotkey = "Ctrl+Alt+2" },
+        new() { Text = "O áudio não está chegando" },
+        new() { Text = "Favor colocar o fone/headset" },
     ];
+
+    /// <summary>
+    /// Onde a janelinha do operador estava na última vez (para abrir no mesmo lugar).
+    /// Vazio = canto inferior direito da tela principal.
+    /// </summary>
+    [JsonPropertyName("posicaoDaJanela")]
+    public WindowPosition? ControlWindowPosition { get; set; }
 
     /// <summary>Corrige valores fora do esperado (ex.: alguém digitou 0 segundos no arquivo).</summary>
     public void Normalize()
@@ -45,13 +48,19 @@ public sealed class AppSettings
     }
 }
 
-/// <summary>Uma mensagem pronta, com atalho opcional.</summary>
+/// <summary>Uma mensagem pronta, que vira um botão na janela do operador.</summary>
 public sealed class QuickMessage
 {
     [JsonPropertyName("texto")]
     public string Text { get; set; } = "";
+}
 
-    /// <summary>Ex.: "Ctrl+Alt+1". Pode ficar vazio.</summary>
-    [JsonPropertyName("atalho")]
-    public string? Hotkey { get; set; }
+/// <summary>Posição de uma janela na área de trabalho (em unidades do WPF).</summary>
+public sealed class WindowPosition
+{
+    [JsonPropertyName("esquerda")]
+    public double Left { get; set; }
+
+    [JsonPropertyName("topo")]
+    public double Top { get; set; }
 }

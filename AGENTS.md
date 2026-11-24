@@ -30,14 +30,18 @@ A pessoa que conversa com você pode não ser programadora. Então:
 4. **Nunca peça para a pessoa rodar comandos** que ela não entende sem explicar
    o que cada um faz. Prefira caminhos com cliques (GitHub no navegador,
    Bloco de Notas).
-5. Se o pedido puder **quebrar algo que é usado ao vivo** (atalhos, posição do
+5. Se o pedido puder **quebrar algo que é usado ao vivo** (botões da janelinha, posição do
    aviso, a janela ficar por cima do OBS), avise o risco antes.
-6. Muitas mudanças **não precisam de código**: mensagens, atalhos, duração e tela
+6. Muitas mudanças **não precisam de código**: mensagens, duração e tela
    da TV ficam no `configuracoes.json` (veja
    [docs/avisos-para-a-tv.md](docs/avisos-para-a-tv.md)). Ofereça esse caminho
    primeiro.
 
 ## Regras do projeto (não negociáveis)
+
+- **A janela do operador é uma janelinha flutuante** (estilo "bichinho" do
+  ChatGPT/Codex): pequena, sempre por cima, arrastável e recolhível numa
+  bolinha. **Sem atalhos de teclado**: tudo é feito clicando.
 
 - **Todo texto que o usuário vê é em português do Brasil** (janelas, botões,
   mensagens de erro, README, docs, nomes das chaves do `configuracoes.json`).
@@ -86,7 +90,7 @@ O código foi escrito para ser lido por quem está aprendendo. Mantenha assim:
 - **Nomes em inglês no código**, **comentários em português** explicando o
   *porquê*, não o óbvio.
 - Uma responsabilidade por classe e uma pasta por assunto (`Alerts/`,
-  `Hotkeys/`, `Monitors/`, `Settings/`, `Views/`, `Native/`).
+  `Monitors/`, `Settings/`, `Views/`, `Native/`).
 - Chamadas à API do Windows ficam **só** em `Native/NativeMethods.cs`, cada uma
   com um comentário dizendo o que faz.
 - Code-behind simples é preferível a arquiteturas pesadas (MVVM completo,
@@ -124,7 +128,7 @@ dotnet build installer -c Release   # .msi, só no Windows
   deixe para a pessoa um **roteiro curto de teste**, por exemplo:
   1. Abrir o app e clicar em **Testar**: o aviso aparece na TV?
   2. Com o projetor do OBS em tela cheia, o aviso fica por cima?
-  3. Com o OBS em foco, os atalhos (`Ctrl+Alt+1`, `Ctrl+Alt+0`) funcionam?
+  3. A janelinha do operador fica por cima do OBS, dá para arrastar e recolher?
   4. O aviso some sozinho no tempo configurado?
 
 ## Publicação (Releases)
@@ -141,7 +145,8 @@ dotnet build installer -c Release   # .msi, só no Windows
 1. Crie uma pasta para ele em `src/IevcLivestreamHelper/` (ex.: `Timers/`).
 2. Se ele precisar de configuração, adicione as chaves novas no `AppSettings`
    (em português no JSON, com valor padrão).
-3. Coloque o acesso a ele na janela do operador sem poluir o que já existe;
+3. Coloque o acesso a ele na janelinha do operador sem poluir o que já existe
+   (ela é pequena de propósito);
    o operador precisa achar tudo rápido durante o culto.
 4. Escreva a página de ajuda em `docs/<nome-do-helper>.md`, para não técnicos,
    no mesmo estilo de [docs/avisos-para-a-tv.md](docs/avisos-para-a-tv.md).
