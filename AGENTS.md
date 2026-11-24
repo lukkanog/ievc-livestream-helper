@@ -44,8 +44,16 @@ A pessoa que conversa com você pode não ser programadora. Então:
 - **O nome do app é "IEVC Livestream Helper"**, e o executável é
   `IevcLivestreamHelper.exe`. Não invente apelidos ou nomes "fofos" para o app
   nem para os helpers.
-- **Um único `.exe` portátil**, sem instalador e sem precisar instalar .NET.
-  Não adicione dependências que quebrem isso.
+- **Duas formas de distribuir, as duas precisam continuar funcionando:**
+  o `.exe` portátil (um único arquivo, sem precisar instalar .NET) e o
+  instalador `.msi` (pasta `installer/`, WiX Toolset 5). Não adicione
+  dependências que quebrem o arquivo único.
+- **No instalador, nunca mude o `UpgradeCode`** em `installer/Package.wxs`;
+  é ele que faz a versão nova substituir a antiga. Fique no WiX 5 (as versões
+  6+ exigem aceitar uma licença com taxa).
+- **Configuração:** na versão portátil fica ao lado do `.exe`; na instalada
+  (pasta sem permissão de escrita) fica em `%AppData%\IEVC Livestream Helper`.
+  Veja `Settings/SettingsStore.cs`.
 - **Leve.** Não adicione pacotes NuGet sem uma boa razão. Nada de telemetria,
   internet, atualização automática ou serviços em segundo plano.
 - **Nada aparece na transmissão.** Janelas sobre a TV devem continuar
@@ -90,6 +98,7 @@ O código foi escrito para ser lido por quem está aprendendo. Mantenha assim:
 
 ```
 src/IevcLivestreamHelper/   O app (C# + WPF, .NET 10)
+installer/                  Instalador .msi (WiX Toolset 5)
 docs/                       Uma página de ajuda por helper (para usuários)
 .github/workflows/          Publicação automática do .exe
 ```
@@ -101,6 +110,7 @@ Detalhes de cada pasta estão no [README](README.md#para-quem-vai-mexer-no-códi
 ```bash
 dotnet build src/IevcLivestreamHelper -c Release
 dotnet publish src/IevcLivestreamHelper -c Release -o publish
+dotnet build installer -c Release   # .msi, só no Windows
 ```
 
 - Compila em Linux/macOS também (`EnableWindowsTargeting`), mas **só roda no

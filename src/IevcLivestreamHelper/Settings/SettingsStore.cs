@@ -5,8 +5,13 @@ using System.Text.Json;
 namespace IevcLivestreamHelper.Settings;
 
 /// <summary>
-/// Lê e grava o arquivo "configuracoes.json", que fica na mesma pasta do .exe
-/// (assim o app é portátil: basta copiar a pasta).
+/// Lê e grava o arquivo "configuracoes.json".
+///
+/// Onde ele fica:
+///   - Versão portátil (o .exe numa pasta qualquer): na mesma pasta do .exe,
+///     assim basta copiar a pasta para levar tudo junto.
+///   - Versão instalada (.msi em "Arquivos de Programas", onde o Windows não
+///     deixa gravar): em %AppData%\IEVC Livestream Helper.
 /// </summary>
 public sealed class SettingsStore
 {
@@ -19,7 +24,9 @@ public sealed class SettingsStore
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
     };
 
-    public string FilePath { get; } = Path.Combine(AppContext.BaseDirectory, "configuracoes.json");
+    private const string FileName = "configuracoes.json";
+
+    public string FilePath { get; } = ChooseFilePath();
 
     /// <summary>
     /// Carrega a configuração. Se o arquivo não existir, cria um com os valores padrão.
@@ -57,6 +64,36 @@ public sealed class SettingsStore
         try
         {
             File.WriteAllText(FilePath, JsonSerializer.Serialize(settings, JsonOptions));
+            return true;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            return false;
+        }
+    }
+
+    /// <summary>Decide onde o arquivo de configuração fica (veja o comentário da classe).</summary>
+    private static string ChooseFilePath()
+    {
+        var besideExe = Path.Combine(AppContext.BaseDirectory, FileName);
+        if (File.Exists(besideExe) || CanWriteTo(AppContext.BaseDirectory))
+            return besideExe;
+
+        var appDataFolder = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            "IEVC Livestream Helper");
+        Directory.CreateDirectory(appDataFolder);
+        return Path.Combine(appDataFolder, FileName);
+    }
+
+    /// <summary>Testa se dá para gravar na pasta criando (e apagando) um arquivo temporário.</summary>
+    private static bool CanWriteTo(string folder)
+    {
+        try
+        {
+            var testFile = Path.Combine(folder, $".teste-de-escrita-{Guid.NewGuid():N}.tmp");
+            File.WriteAllText(testFile, "");
+            File.Delete(testFile);
             return true;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)

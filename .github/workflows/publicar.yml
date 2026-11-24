@@ -1,4 +1,5 @@
-# Gera o IevcLivestreamHelper.exe e publica em "Releases" no GitHub.
+# Gera o IevcLivestreamHelper.exe (portátil) e o IevcLivestreamHelper.msi
+# (instalador) e publica os dois em "Releases" no GitHub.
 #
 # - Push na main  → compila e cria uma Release nova (v1.0.<número da execução>)
 # - Pull request  → só compila, para conferir que está tudo certo
@@ -61,11 +62,35 @@ jobs:
           if (-not (Test-Path $logs)) { throw "O app não criou o arquivo de log." }
           if (Select-String -Path $logs -Pattern "\[ERRO\]" -Quiet) { throw "O app registrou um erro ao abrir (veja o log acima)." }
 
-      - name: Guardar o .exe nesta execução
+      - name: Gerar o instalador .msi
+        shell: pwsh
+        run: |
+          dotnet build installer --configuration Release -p:Version=${{ steps.versao.outputs.numero }}
+          Get-ChildItem installer/bin -Recurse -Filter *.msi | Copy-Item -Destination publish/
+
+      # Instala o .msi em silêncio, confere se o app foi para "Arquivos de Programas"
+      # e desinstala. Garante que o instalador funciona antes de publicar.
+      - name: Testar o instalador
+        shell: pwsh
+        run: |
+          $msi = (Resolve-Path publish/IevcLivestreamHelper.msi).Path
+          $exe = Join-Path $env:ProgramFiles "IEVC Livestream Helper\IevcLivestreamHelper.exe"
+
+          $instalar = Start-Process msiexec -ArgumentList "/i `"$msi`" /qn /l*v instalar.log" -Wait -PassThru
+          if ($instalar.ExitCode -ne 0) { Get-Content instalar.log -Tail 50; throw "Falha ao instalar (código $($instalar.ExitCode))." }
+          if (-not (Test-Path $exe)) { throw "O app não foi instalado em $exe." }
+
+          $remover = Start-Process msiexec -ArgumentList "/x `"$msi`" /qn" -Wait -PassThru
+          if ($remover.ExitCode -ne 0) { throw "Falha ao desinstalar (código $($remover.ExitCode))." }
+          if (Test-Path $exe) { throw "O app continuou em $exe depois de desinstalar." }
+
+      - name: Guardar os arquivos nesta execução
         uses: actions/upload-artifact@v4
         with:
           name: IevcLivestreamHelper-${{ steps.versao.outputs.numero }}
-          path: publish/IevcLivestreamHelper.exe
+          path: |
+            publish/IevcLivestreamHelper.exe
+            publish/IevcLivestreamHelper.msi
 
       - name: Publicar a Release
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
@@ -74,6 +99,8 @@ jobs:
           tag_name: v${{ steps.versao.outputs.numero }}
           name: IEVC Livestream Helper v${{ steps.versao.outputs.numero }}
           target_commitish: ${{ github.sha }}
-          files: publish/IevcLivestreamHelper.exe
+          files: |
+            publish/IevcLivestreamHelper.msi
+            publish/IevcLivestreamHelper.exe
           generate_release_notes: true
           make_latest: true
